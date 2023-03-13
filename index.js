@@ -1,10 +1,4 @@
-const todoStore = new Store([
-  {
-    id: "1",
-    taskName: "New Task dshifaahdsf",
-    done: false,
-  },
-]);
+const todoStore = new Store([]);
 
 // Add Task
 function addTask(taskName) {
@@ -16,6 +10,8 @@ function addTask(taskName) {
 
   const data = todoStore.get();
   todoStore.update([...data, newTask]);
+
+  callNotification("Successfully Added", taskName);
   return todoStore.get();
 }
 
@@ -102,9 +98,9 @@ todoStore.subscribe(function (data) {
 
   // updateUI()
   updateTodoUI(data);
-});
 
-prettyLog(todoStore.get());
+  saveLocalData("todoStore", data);
+});
 
 function updateTodoUI(data) {
   const listContainer = document.getElementById("todo-list-container");
@@ -149,4 +145,59 @@ function getById(id) {
   return document.getElementById(id);
 }
 
+function saveLocalData(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getLocalData(key) {
+  return JSON.parse(localStorage.getItem(key));
+}
+
 updateTodoUI(todoStore.get());
+
+// Windows Start
+
+function initial() {
+  const data = getLocalData("todoStore");
+
+  if (data) {
+    todoStore.update(data);
+  }
+}
+
+function callNotification(text, bodyText) {
+  console.log("Calling NOti method");
+
+  if (!("Notification" in window)) {
+    // Check if the browser supports notifications
+
+    console.log("Not Supported Noti");
+
+    alert("This browser does not support desktop notification");
+  } else if (Notification.permission === "granted") {
+    // Check whether notification permissions have already been granted;
+    // if so, create a notification
+    const notification = new Notification(bodyText, {
+      title: text,
+      body: bodyText,
+    });
+
+    console.log("Permission Notition");
+
+    // …
+  } else if (Notification.permission !== "denied") {
+    // We need to ask the user for permission
+    Notification.requestPermission().then((permission) => {
+      // If the user accepts, let's create a notification
+      if (permission === "granted") {
+        const notification = new Notification(bodyText, {
+          title: text,
+          body: bodyText,
+        });
+        // …
+      }
+    });
+  }
+}
+
+initial();
